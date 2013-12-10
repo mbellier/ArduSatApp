@@ -15,7 +15,9 @@ The code is divided in two modules:
 Progress
 ---------
 
-Currently, the first feature developped is the localization of a satellite, from a TLE and a given time. The program has been tested on a regular desktop computer and not cross-compiled yet.
+Currently, the first feature developped is the localization of a satellite, from a TLE and a given time. The satellite position is given by its longitude and latitude, or its azimuth and elevation given an observation point.
+
+ The program has been tested on a regular desktop computer and not cross-compiled yet.
 
 Features that will be implemented next:
 	 * Getting current time
