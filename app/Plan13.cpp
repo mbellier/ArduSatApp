@@ -179,8 +179,6 @@ void Plan13::initSat(void){
   ay = -CL * SO;
   az = -SL;
 
-  /* Miscellaneous */
-  //OLDRN = -99999;
   if (DEBUG) { Serial.println("End initSat()");}
 }
 

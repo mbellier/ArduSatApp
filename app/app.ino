@@ -1,8 +1,4 @@
-#include "Arduino.h"
-
 #include "Plan13.h"
-
-
 
 Plan13 p13;
 
