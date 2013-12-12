@@ -3,18 +3,18 @@
 #include "Plan13.h"
 #define DEBUG false
 
-/* // debug desktop output
-#include "stdio.h"
-static struct{
-  void print(float x){printf("%f", x);}
-  void println(float x){printf("%f\n", x);}
+/* // quick hack for desktop debugging
+   #include "stdio.h"
+   static struct{
+   void print(float x){printf("%f", x);}
+   void println(float x){printf("%f\n", x);}
 
-  void print(const char s[]){printf("%s", s);}
-  void println(const char s[]){printf("%s\n", s);}
+   void print(const char s[]){printf("%s", s);}
+   void println(const char s[]){printf("%s\n", s);}
 
-} Serial_;
-#define Serial Serial_
-//*/
+   } Serial_;
+   #define Serial Serial_
+*/
 
 
 /*
@@ -28,21 +28,23 @@ double Plan13::deg(double rad){
   return (rad * 180.0 / M_PI);
 }
 
-// todo: just use atan2 ?
 double Plan13::FNatn(double y, double x){
-  float a;
-  if (x != 0)
-      a = atan(y / x);
-  else
-      a = M_PI / 2.0 * sin(y);
-  if (x < 0)
-      a = a + M_PI;
-  if (a < 0)
-      a = a + 2.0 * M_PI;
-  return a;
+  return atan2(y, x);
+  /*
+    float a;
+    if (x != 0)
+    a = atan(y / x);
+    else
+    a = M_PI / 2.0 * sin(y);
+    if (x < 0)
+    a = a + M_PI;
+    if (a < 0)
+    a = a + 2.0 * M_PI;
+    return a;
+  */
 }
 
-/** Convert date to day number
+/* Convert date to day number
  *
  * Function returns a general day number from year, month, and day.
  * Value is (JulianDay - 1721409.5) or (AmsatDay + 722100)
@@ -59,7 +61,7 @@ double Plan13::FNday(int year, int month, int day){
 
 
 void Plan13::initSat(void){
-  /* Observer's location */
+  // Observer's location
   if (DEBUG) {Serial.println("Start initSat()");}
 
   LA = rad( observer_lat );
@@ -69,11 +71,11 @@ void Plan13::initSat(void){
   SL = sin(LA);
   CO = cos(LO);
   SO = sin(LO);
-  /* WGS-84 Earth Ellipsoid */
+  // WGS-84 Earth Ellipsoid
   RE = 6378.137;
   FL = 1.0 / 298.257224;
 
-  /* IAU-76 Earth Ellipsoid */
+  // IAU-76 Earth Ellipsoid
   // RE = 6378.140;
   // FL = 1.0 / 298.257;
 
@@ -86,7 +88,7 @@ void Plan13::initSat(void){
   Rx = XX / D + HT;
   Rz = ZZ / D + HT;
 
-  /* Observer's unit vectors Up EAST and NORTH in geocentric coordinates */
+  // Observer's unit vectors Up EAST and NORTH in geocentric coordinates 
   Ux = CL * CO;
   Ex = -SO;
   Nx = -SL * CO;
@@ -99,12 +101,12 @@ void Plan13::initSat(void){
   Ez = 0;
   Nz = CL;
 
-  /* Observer's XYZ coordinates at earth's surface */
+  // Observer's XYZ coordinates at earth's surface 
   Ox = Rx * Ux;
   Oy = Rx * Uy;
   Oz = Rz * Uz;
 
-  /* Convert angles to radians, etc. */
+  // Convert angles to radians, etc. 
   RA = rad(RA);
   IN = rad(IN);
   WP = rad(WP);
@@ -112,17 +114,17 @@ void Plan13::initSat(void){
   MM = MM * 2.0 * M_PI;
   M2 = M2 * 2.0 * M_PI;
 
-  // YM = 365.25;       /* Mean year, days                       */
-  // YT = 365.2421970;  /* Tropical year, days                   */
-  WW = 2.0 * M_PI / YT; /* Earth's rotation rate, rads/whole day */
-  WE = 2.0 * M_PI + WW; /* Earth's rotation rate, rads/day       */
-  W0 = WE / 86400;      /* Earth's rotation rate, rads/sec       */
+  // YM = 365.25;       // Mean year, days                       
+  // YT = 365.2421970;  // Tropical year, days                   
+  WW = 2.0 * M_PI / YT; // Earth's rotation rate, rads/whole day 
+  WE = 2.0 * M_PI + WW; // Earth's rotation rate, rads/day       
+  W0 = WE / 86400;      // Earth's rotation rate, rads/sec       
 
-  /* Observer's velocity, geocentric coordinates */
+  // Observer's velocity, geocentric coordinates 
   VOx = -Oy * W0;
   VOy =  Ox * W0;
 
-  /* Convert satellite epoch to Day No. and fraction of a day */
+  // Convert satellite epoch to Day No. and fraction of a day 
   DE = FNday(YE, 1, 0) + (int)TE;
   
   TE = TE - (int)TE;
@@ -132,45 +134,45 @@ void Plan13::initSat(void){
     Serial.print("TE: ");
     Serial.println(TE);
   }
-  /* Average Precession rates */
-  GM = 3.986E5;               /* Earth's gravitational constant km^3/s^2  */
-  J2 = 1.08263E-3;            /* 2nd Zonal coeff, Earth's gravity Field   */
-  N0 = MM / 86400.0;                  /* Mean motion rads/s               */
-  A0 = pow(GM / N0 / N0, 1.0 / 3.0);  /* Semi major axis km               */
-  b0 = A0 * sqrt(1.0 - EC * EC);      /* Semi minor axis km               */
+  // Average Precession rates 
+  GM = 3.986E5;               // Earth's gravitational constant km^3/s^2  
+  J2 = 1.08263E-3;            // 2nd Zonal coeff, Earth's gravity Field   
+  N0 = MM / 86400.0;                  // Mean motion rads/s               
+  A0 = pow(GM / N0 / N0, 1.0 / 3.0);  // Semi major axis km               
+  b0 = A0 * sqrt(1.0 - EC * EC);      // Semi minor axis km               
   SI = sin(IN);
   CI = cos(IN);
   PC = RE * A0 / (b0 * b0);
-  PC = 1.5 * J2 * PC * PC * MM;       /* Precession const, rad/day        */
-  QD = -PC * CI;                      /* Node Precession rate, rad/day    */
-  WD = PC *(5.0 * CI*CI - 1.0) / 2.0; /* Perigee Precession rate, rad/day */
-  DC = -2.0 * M2 / MM / 3.0;          /* Drag coeff                       */
+  PC = 1.5 * J2 * PC * PC * MM;       // Precession const, rad/day        
+  QD = -PC * CI;                      // Node Precession rate, rad/day    
+  WD = PC *(5.0 * CI*CI - 1.0) / 2.0; // Perigee Precession rate, rad/day 
+  DC = -2.0 * M2 / MM / 3.0;          // Drag coeff                       
 
-  /* Sideral and solar data. Never needs changing. Valid to year 2000+ */
+  // Sideral and solar data. Never needs changing. Valid to year 2000+ 
 
 
-  /* GHAA, Year YG, Jan 0.0 */
+  // GHAA, Year YG, Jan 0.0 
   YG = 2010;
   G0 = 99.5578;
-  /* MA Sun and rate, deg, deg/day */
+  // MA Sun and rate, deg, deg/day 
   MAS0 = 356.4485;
   MASD = 0.98560028;
-  /* Sun's inclination */
+  // Sun's inclination 
   INS = rad(23.4380);
   CNS = cos(INS);
   SNS = sin(INS);
-  /* Sun's equation of center terms */
+  // Sun's equation of center terms 
   EQC1 = 0.03341;
   EQC2 = 0.00035;
 
 
-  /* Bring Sun data to satellite epoch */
-  TEG = (DE - FNday(YG, 1, 0)) + TE;  /* Elapsed Time: Epoch - YG         */
-  GHAE = rad(G0) + TEG * WE;          /* GHA Aries, epoch                 */
-  MRSE = rad(G0) + (TEG * WW) + M_PI; /* Mean RA Sun at Sat Epoch         */
-  MASE = rad(MAS0 + MASD * TEG);      /* Mean MA Sun                      */
+  // Bring Sun data to satellite epoch 
+  TEG = (DE - FNday(YG, 1, 0)) + TE;  // Elapsed Time: Epoch - YG         
+  GHAE = rad(G0) + TEG * WE;          // GHA Aries, epoch                 
+  MRSE = rad(G0) + (TEG * WW) + M_PI; // Mean RA Sun at Sat Epoch         
+  MASE = rad(MAS0 + MASD * TEG);      // Mean MA Sun                      
 
-  /* Antenna unit vector in orbit plane coordinates */
+  // Antenna unit vector in orbit plane coordinates 
   CO = cos(rad(ALON));
   SO = sin(rad(ALON));
   CL = cos(rad(ALAT));
@@ -182,41 +184,41 @@ void Plan13::initSat(void){
   if (DEBUG) { Serial.println("End initSat()");}
 }
 
-/**
- * Calculate satellite position at DN, TN
- */
-void Plan13::satvec(void)
+//*
+* Calculate satellite position at DN, TN
+  */
+  void Plan13::satvec(void)
 {
   if (DEBUG) {Serial.println("Start satvec()");}
-  T = (DN - DE) + (TN - TE);          /* Elapsed T since epoch            */
+  T = (DN - DE) + (TN - TE);          // Elapsed T since epoch            
   if (DEBUG) {
     Serial.print("T: ");
     Serial.println(T);
   }
-  DT = DC * T / 2.0;                  /* Linear drag terms                */
+  DT = DC * T / 2.0;                  // Linear drag terms                
   KD = 1.0 + 4.0 * DT;
   KDP = 1.0 - 7.0 * DT;
-  M = MA + MM * T * (1.0 - 3.0 * DT); /* Mean anomaly at YR,/ TN          */
-  DR = (int)(M / (2.0 * M_PI));       /* Strip out whole no of revs       */
-  M = M - DR * 2.0 * M_PI;            /* M now in range 0 - 2PI           */
-  RN = RV + DR + 1;                   /* Current orbit number             */
+  M = MA + MM * T * (1.0 - 3.0 * DT); // Mean anomaly at YR,/ TN          
+  DR = (int)(M / (2.0 * M_PI));       // Strip out whole no of revs       
+  M = M - DR * 2.0 * M_PI;            // M now in range 0 - 2PI           
+  RN = RV + DR + 1;                   // Current orbit number             
 
-  /* Solve M = EA - EC * sin(EA) for EA given M, by Newton's method       */
-  EA = M;                             /* Initail solution                 */
+  // Solve M = EA - EC * sin(EA) for EA given M, by Newton's method       
+  EA = M;                             // Initail solution                 
   do {
     C = cos(EA);
     S = sin(EA);
     DNOM = 1.0 - EC * C;
-    D = (EA - EC * S - M) / DNOM;     /* Change EA to better resolution   */
-    EA = EA - D;                      /* by this amount until converged   */
+    D = (EA - EC * S - M) / DNOM;     // Change EA to better resolution   
+    EA = EA - D;                      // by this amount until converged   
   } while (fabs(D) > 1.0E-5);
 
-  /* Distances */
+  // Distances 
   A = A0 * KD;
   B = b0 * KD;
   RS = A * DNOM;
 
-  /* Calculate satellite position and velocity in plane of ellipse */
+  // Calculate satellite position and velocity in plane of ellipse 
   Sx = A * (C - EC);
   Vx = -A * S / DNOM * N0;
   Sy = B * S;
@@ -229,7 +231,7 @@ void Plan13::satvec(void)
   CQ = cos(RAAN);
   SQ = sin(RAAN);
 
-  /* Plane -> celestial coordinate transformation, [C] = [RAAN]*[IN]*[AP] */
+  // Plane -> celestial coordinate transformation, [C] = [RAAN]*[IN]*[AP] 
   CXx = CWw * CQ - SW * CI * SQ;
   CXy = -SW * CQ - CWw * CI * SQ;
   CXz = SI * SQ;
@@ -240,8 +242,8 @@ void Plan13::satvec(void)
   CZy = CWw * SI;
   CZz = CI;
 
-  /* Compute satellite's position vector, ANTenna axis unit vector    */
-  /*   and velocity  in celestial coordinates. (Note: Sz = 0, Vz = 0) */
+  // Compute satellite's position vector, ANTenna axis unit vector    
+  //   and velocity  in celestial coordinates. (Note: Sz = 0, Vz = 0) 
   SATx = Sx * CXx + Sy * CXy;
   ANTx = ax * CXx + ay * CXy + az * CXz;
   VELx = Vx * CXx + Vy * CXy;
@@ -252,8 +254,8 @@ void Plan13::satvec(void)
   ANTz = ax * CZx + ay * CZy + az * CZz;
   VELz = Vx * CZx + Vy * CZy;
 
-  /* Also express SAT, ANT, and VEL in geocentric coordinates */
-  GHAA = GHAE + WE * T;       /* GHA Aries at elaprsed time T */
+  // Also express SAT, ANT, and VEL in geocentric coordinates 
+  GHAA = GHAE + WE * T;       // GHA Aries at elaprsed time T 
   C = cos(-GHAA);
   S = sin(-GHAA);
   Sx = SATx * C - SATy * S;
@@ -270,22 +272,22 @@ void Plan13::satvec(void)
 
 }
 
-/**
- * Compute and manipulate range/velocity/antenna vectors
- */
+//*
+* Compute and manipulate range/velocity/antenna vectors
+ 
 void Plan13::rangevec(void)
 {
   if (DEBUG) {Serial.println("Start rangevec()");}
 
-  /* Range vector = sat vector - observer vector */
+  // Range vector = sat vector - observer vector 
   Rx = Sx - Ox;
   Ry = Sy - Oy;
   Rz = Sz - Oz;
   
-  /* Range Magnitute */
+  // Range Magnitute 
   R = sqrt(Rx * Rx + Ry * Ry + Rz * Rz);
 
-  /* Normalize range vector */
+  // Normalize range vector 
   Rx = Rx / R;
   Ry = Ry / R;
   Rz = Rz / R;
@@ -296,30 +298,20 @@ void Plan13::rangevec(void)
   AZ = deg(FNatn(E, N));
   EL = deg(asin(U));
 
-  /* Solve antenna vector along unit range vector, -r.a = cos(SQ) */
-  /* SQ = deg(acos(-(Ax * Rx + Ay * Ry + Az * Rz)));   */
-  /* Calculate sub-satellite Lat/Lon */
-  SLON = deg(FNatn(Sy, Sx));   /* Lon, + East  */
-  SLAT = deg(asin(Sz / RS));   /* Lat, + North */
+  // Solve antenna vector along unit range vector, -r.a = cos(SQ) 
+  // SQ = deg(acos(-(Ax * Rx + Ay * Ry + Az * Rz)));   
+  // Calculate sub-satellite Lat/Lon 
+  SLON = deg(FNatn(Sy, Sx));   // Lon, + East  
+  SLAT = deg(asin(Sz / RS));   // Lat, + North 
 
-  /* Resolve Sat-Obs velocity vector along unit range vector. (VOz = 0) */
-  RR = (Vx - VOx) * Rx + (Vy - VOy) * Ry + Vz * Rz; /* Range rate, km/sec */
-
-  /*
-  //FR = rxFrequency * (1 - RR / 299792);
-  dopplerFactor = RR / 299792.0;
-  int rxDoppler = getDoppler(rxFrequencyLong);
-  int txDoppler = getDoppler(txFrequencyLong);
-  rxOutLong = rxFrequencyLong - rxDoppler;
-  txOutLong = txFrequencyLong + txDoppler;
-  */
+  // Resolve Sat-Obs velocity vector along unit range vector. (VOz = 0) 
+  RR = (Vx - VOx) * Rx + (Vy - VOy) * Ry + Vz * Rz; // Range rate, km/sec 
 
   if (DEBUG) {Serial.println("End rangevec()");}
 }
 
 
-void Plan13::printdata(void)
-{
+void Plan13::printdata(void) const {
   Serial.print("> ");
   Serial.print("AZ:");
   Serial.print(AZ);
@@ -333,7 +325,7 @@ void Plan13::printdata(void)
 }
 
 
-/**
+/*
  * Setter method for indicating the location of the ground station. 
  * This and setElements() must be done before the calculate method 
  * is applied for the first time.
@@ -349,7 +341,7 @@ void Plan13::setLocation(double observer_lon_in, double observer_lat_in, int hei
   observer_height = height;       //60m height in meters
 }
 
-/**
+/*
  * Setter method for UTC time at which the satellite is to be observed. 
  * This is usually the current tim.
  * \param yearIn The current year in four digits, like 2010
@@ -372,7 +364,7 @@ void Plan13::setTime(int yearIn, int monthIn, int mDayIn, int hourIn, int minIn,
   DN = (long)DN;
 }
 
-/**
+/*
  * Sets the keplerian elements for the following calculations. If the TEST variable
  * is defined 'true', some sample elements will be applied.
  * \param YE_in the YE element
@@ -405,7 +397,7 @@ void   Plan13::setElements(double YE_in, double TE_in, double IN_in, double
   ALON = ALON_in;
 }
 
-/**
+/*
  * A function that joins together the necessary functions for calculating 
  * the satellite position. You must set the keplerian elements, time and observer lat/long
  * before using this.
@@ -414,6 +406,19 @@ void  Plan13::calculate(){
   initSat();
   satvec();
   rangevec();
+}
+
+double Plan13::getAzimuth() const{
+  return AZ;
+}
+double Plan13::getElevation() const{
+  return EL;
+}
+double Plan13::getLongitude() const{
+  return SLON;
+}
+double Plan13::getLatitude() const{
+  return SLAT;
 }
 
 

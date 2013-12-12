@@ -3,7 +3,6 @@
 
 class Plan13 {
  public:
-  void setFrequency (unsigned long rx_frequency, unsigned long tx_frequency);
   void setLocation  (double lon, double lat, int height);
   void setTime      (int yearIn, int monthIn, int mDayIn,
 		     int hourIn, int minIn, int secIn);
@@ -12,25 +11,31 @@ class Plan13 {
 		     double MA_in, double MM_in, double M2_in,
 		     double RV_in, double ALON_in );
   void calculate    ();
-  //void calculate    (double &az, double &el, double &lon,double &lat);
-  void printdata    (void);
+  void printdata    (void) const;
+
+
+  double getAzimuth() const;
+  double getElevation() const;
+  double getLongitude() const;
+  double getLatitude() const;
 
  private:
-  double rad      (double deg);
-  double deg      (double rad);
+
+  inline double rad      (double deg);
+  inline double deg      (double rad);
   double FNatn    (double y, double x);
   double FNday    (int year, int month, int day);
   void   initSat  (void);
   void   satvec   (void);
   void   rangevec (void);
- 
+
   double observer_lon;
   double observer_lat;
   int    observer_height;
 
-  const static double   YM = 365.25;  /* Days in a year                     */
-  double   EL;                        /* Elevation                          */
-  double   TN;                        
+  const static double   YM = 365.25;  // Days in a year
+  double   EL;                        // Elevation 
+  double   TN;
 
   double   E;
   double   N;
@@ -158,7 +163,7 @@ class Plan13 {
   double   DS;
   double   DF;
 
-  /* keplerians */
+  // keplerians
 
   char     SAT[20];
   long     SATNO;
@@ -177,13 +182,13 @@ class Plan13 {
   double   rxOut;
   double   txOut;
 
-  /* location */
+  // location
   char     LOC[20];
   double   LA;
   double   LO;
   double   HT;
 
-  double   HR; /* Hours */
+  double   HR; // Hours
   double   DN;
 
 };
